@@ -1,0 +1,11 @@
+channels:
+  - conda-forge
+  - nodefaults
+dependencies:
+  - python =3.11
+  - polars =1.21
+  - altair =5.3
+  - altair_saver =0.5
+  - vegafusion =1.6
+  - vegafusion-python-embed =1.6
+  - vl-convert-python =1.5
