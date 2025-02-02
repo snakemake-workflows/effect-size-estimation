@@ -6,7 +6,16 @@ datasets:
       - genotype
       - diet
     axis: genotype
-    color: diet 
+    color: diet
+    order:
+      genotype:
+        - WT
+        - hepTRbKO
+      diet:
+        - LDC
+        - EtOH
+        - LDC+T3
+        - EtOH+T3
 
 comparisons:
   - group_a:
@@ -15,3 +24,4 @@ comparisons:
 
 
 n_bootstraps: 1000
+seed: 214612
