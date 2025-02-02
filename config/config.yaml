@@ -5,8 +5,7 @@ datasets:
     vars:
       - genotype
       - diet
-    axis: genotype
-    color: diet
+    value: free T3 serum concentration / pg/mL
     order:
       genotype:
         - WT

@@ -9,6 +9,8 @@ data = pl.read_parquet(snakemake.input.data)
 
 var_values = data.select(snakemake.params.vars).unique(maintain_order=True)
 
+value_col = snakemake.params.value
+
 comparisons = list(
     combinations(
         var_values.select(pl.struct(snakemake.params.vars).alias("case")).get_column(
@@ -33,9 +35,9 @@ def sample_effect_sizes(sample):
     def comp_effect_size(comp):
         a = means.filter([pl.col(var) == comp[0][var] for var in snakemake.params.vars])
         b = means.filter([pl.col(var) == comp[1][var] for var in snakemake.params.vars])
-        a_val = a.select(pl.col("value")).item()
-        b_val = b.select(pl.col("value")).item()
-        var_cols = pl.col("*").exclude("index", "value")
+        a_val = a.select(pl.col(value_col)).item()
+        b_val = b.select(pl.col(value_col)).item()
+        var_cols = pl.col("*").exclude("index", value_col)
         return {
             "group_a": a.select(var_cols).row(0),
             "group_b": b.select(var_cols).row(0),

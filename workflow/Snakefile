@@ -37,6 +37,7 @@ rule bootstrap:
         vars=lookup("datasets/{dataset}/vars", within=config),
         n_bootstraps=config["n_bootstraps"],
         seed=config["seed"],
+        value=lookup("datasets/{dataset}/value", within=config),
     conda:
         "envs/pystats.yaml"
     script:
@@ -64,6 +65,7 @@ rule plot_distributions:
         "results/plots/{dataset}/distributions.html"
     params:
         vars=lookup("datasets/{dataset}/vars", within=config),
+        value=lookup("datasets/{dataset}/value", within=config),
     conda:
         "envs/pystats.yaml"
     script:

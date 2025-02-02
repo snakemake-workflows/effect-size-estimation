@@ -62,7 +62,7 @@ dist_chart = (
     .mark_circle()
     .encode(
         alt.X(snakemake.params.vars[0], type="nominal", sort=None),
-        alt.Y("value").axis(grid=False),
+        alt.Y(snakemake.params.value).axis(grid=False),
         alt.XOffset("index"),
         alt.Color("case").scale(domain=color_order),
     )
