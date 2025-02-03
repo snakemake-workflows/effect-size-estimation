@@ -21,7 +21,7 @@ rule bootstrap:
         vars=lookup("datasets/{dataset}/variables", within=config),
         n_bootstraps=config["n_bootstraps"],
         seed=config["seed"],
-        value=lookup("datasets/{dataset}/value", within=config),
+        value=get_value_column,
     conda:
         "../envs/pystats.yaml"
     script:

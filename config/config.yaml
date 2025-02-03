@@ -1,7 +1,7 @@
 datasets:
   fig_1b_ft3:
     path: config/data/test.tsv
-    vars:
+    variables:
       - var0
       - var1
     value: some measurement

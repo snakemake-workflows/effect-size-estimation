@@ -2,7 +2,12 @@ rule plot_effect_bootstrap_histograms:
     input:
         "results/bootstrap/histograms/{dataset}.parquet",
     output:
-        "results/plots/{dataset}/bootstrap_histograms.html",
+        report(
+            "results/plots/{dataset}/bootstrap_histograms.html",
+            category="{dataset}",
+            labels={"plot": "Posterior fold change distributions"},
+            caption="../report/effect_histograms.rst",
+        ),
     params:
         vars=lookup("datasets/{dataset}/variables", within=config),
     conda:
@@ -16,10 +21,15 @@ rule plot_dists_and_effects:
         cis="results/bootstrap/confidence_intervals/{dataset}.parquet",
         data="results/data/{dataset}.sorted.parquet",
     output:
-        "results/plots/{dataset}/distributions.html",
+        report(
+            "results/plots/{dataset}/distributions.html",
+            category="{dataset}",
+            labels={"plot": "Data distributions and conservative fold changes"},
+            caption="../report/distributions.rst",
+        ),
     params:
         vars=lookup("datasets/{dataset}/variables", within=config),
-        value=lookup("datasets/{dataset}/value", within=config),
+        value=get_value_column,
     conda:
         "../envs/pystats.yaml"
     script:

@@ -1,5 +1,7 @@
 configfile: "config/config.yaml"
 
+
+include: "rules/common.smk"
 include: "rules/processing.smk"
 include: "rules/plotting.smk"
 include: "rules/testing.smk"

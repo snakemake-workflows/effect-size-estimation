@@ -1,4 +1,6 @@
-for test_name, test in config["tests"].items():
+tests = lookup("tests", within=config, default={})
+
+for test_name, test in tests.items():
     config["datasets"][test_name] = {
         "path": f"resources/simulation/n_vars:2.n_points:{test['n_points']}_seed:{test['seed']}_log2fc:{test['log2fc']}.tsv",
         "vars": ["var0", "var1"],
@@ -12,7 +14,7 @@ for test_name, test in config["tests"].items():
 
 rule all_tests:
     input:
-        collect("results/tests/{test}.passed", test=config["tests"]),
+        collect("results/tests/{test}.passed", test=tests),
 
 
 rule simulate_data:

@@ -17,7 +17,7 @@ data = data.with_columns(
 color_order = data.get_column("case").unique(maintain_order=True).to_list()
 
 
-def get_conservative_log2_fold_change(ci):
+def get_conservative_log2_fold_change(ci) -> float:
     lower, upper = ci["lower"], ci["upper"]
     if lower <= 0.0 <= upper:
         return 0.0
@@ -29,7 +29,7 @@ cis = (
     pl.read_parquet(snakemake.input.cis)
     .with_columns(
         pl.struct(["lower", "upper"])
-        .map_elements(get_conservative_log2_fold_change)
+        .map_elements(get_conservative_log2_fold_change, return_dtype=float)
         .alias("conservative_log2_fold_change")
     )
     .with_columns(
@@ -59,17 +59,17 @@ cis = cis.with_columns(
 
 dist_chart = (
     alt.Chart(data.with_columns())
-    .mark_circle()
+    .mark_circle(tooltip=True)
     .encode(
-        alt.X(snakemake.params.vars[0], type="nominal", sort=None),
-        alt.Y(snakemake.params.value).axis(grid=False),
-        alt.XOffset("index"),
+        alt.X("case", type="nominal", sort=None).axis(None),
+        alt.Y(snakemake.params.value).axis(grid=False, title=None),
         alt.Color("case").scale(domain=color_order),
     )
     .properties(
-        width=200,
+        width=230,
         height=120,
         view=alt.ViewConfig(stroke=None),
+        title=snakemake.params.value,
     )
 )
 
@@ -107,41 +107,46 @@ def fmt_fold_change(log2_fold_change: float) -> str:
     else:
         direction = "⏷"
         fold_change = 1 / (2**log2_fold_change)
-    fold_change = round(fold_change)
-    if fold_change == 1:
+    if log2_fold_change == 0:
         return "="
     else:
-        return f"{direction}{fold_change:.0f}"
+        if fold_change < 1.05:
+            return "≈"
+        else:
+            return f"{direction}{fold_change:.1f}"
+        # else:
+        #     return f"{direction}{fold_change:.0f}"
 
 
 comp_chart = (
     alt.Chart(
         cis.with_columns(
             pl.col("conservative_log2_fold_change")
-            .map_elements(fmt_fold_change)
+            .map_elements(fmt_fold_change, return_dtype=str)
             .alias("fold change"),
+            pl.concat_list([f"group_a_{var}" for var in snakemake.params.vars])
+            .list.join(": ")
+            .alias("group_a_case"),
             pl.concat_list([f"group_b_{var}" for var in snakemake.params.vars])
             .list.join(": ")
             .alias("group_b_case"),
         )
     )
-    .mark_text()
+    .mark_text(fontSize=10, align="center")
     .encode(
-        alt.X(f"group_a_{snakemake.params.vars[0]}", type="nominal", sort=None).axis(None),
-        alt.XOffset("group_a_index"),
-        alt.Y(f"group_b_{snakemake.params.vars[0]}", type="nominal", sort=None).axis(None),
-        alt.YOffset("group_b_index"),
+        alt.X("group_a_case", type="nominal", sort=None).axis(None),
+        alt.Y("group_b_case", type="nominal", sort=None).axis(None).scale(reverse=True),
         alt.Text("fold change"),
         alt.Color("group_b_case").scale(domain=color_order).legend(title=None),
     )
     .properties(
-        width=200,
+        width=230,
         height=120,
         view=alt.ViewConfig(stroke=None),
     )
 )
 
-(comp_chart & dist_chart).configure_concat(spacing=0).resolve_scale(
+(dist_chart & comp_chart).configure_concat(spacing=0).resolve_scale(
     y="independent", x="shared", color="shared"
 ).save(snakemake.output[0])
 # comp_chart.save(snakemake.output[0])
