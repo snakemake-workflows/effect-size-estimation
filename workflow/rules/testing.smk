@@ -6,8 +6,9 @@ for test_name, test in config["tests"].items():
         "order": {
             "var0": ["a", "b"],
             "var1": ["a", "b"],
-        }
+        },
     }
+
 
 rule all_tests:
     input:
@@ -16,7 +17,7 @@ rule all_tests:
 
 rule simulate_data:
     output:
-        "resources/simulation/n_vars:{n_vars}.n_points:{n_points}_seed:{seed}_log2fc:{log2fc}.tsv"
+        "resources/simulation/n_vars:{n_vars}.n_points:{n_points}_seed:{seed}_log2fc:{log2fc}.tsv",
     params:
         n_vars=evaluate("int({n_vars})"),
         n_points=evaluate("int({n_points})"),
@@ -32,7 +33,7 @@ rule validate_results:
     input:
         "results/bootstrap/confidence_intervals/{test}.parquet",
     output:
-        touch("results/tests/{test}.passed")
+        touch("results/tests/{test}.passed"),
     params:
         log2fc=lookup("tests/{test}/log2fc", within=config),
     script:
