@@ -14,3 +14,5 @@ def get_value_column(wildcards):
                     "data file {data_path}. Automatic inference only works if the data "
                     "file contains exactly #variables + 1 columns."
                 )
+    else:
+        return definition

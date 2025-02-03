@@ -3,7 +3,7 @@ tests = lookup("tests", within=config, default={})
 for test_name, test in tests.items():
     config["datasets"][test_name] = {
         "path": f"resources/simulation/n_vars:2.n_points:{test['n_points']}_seed:{test['seed']}_log2fc:{test['log2fc']}.tsv",
-        "vars": ["var0", "var1"],
+        "variables": ["var0", "var1"],
         "value": "value",
         "order": {
             "var0": ["a", "b"],
@@ -14,8 +14,7 @@ for test_name, test in tests.items():
 
 rule all_tests:
     input:
-        collect("results/tests/{test}.passed", test=tests),
-
+        "results/tests.tsv"
 
 rule simulate_data:
     output:
@@ -26,17 +25,20 @@ rule simulate_data:
         seed=evaluate("int({seed})"),
         log2fc=evaluate("float({log2fc})"),
     conda:
-        "../envs/pystats.yaml"
+        "../envs/simulation.yaml"
     script:
         "../scripts/simulate_data.py"
 
 
 rule validate_results:
     input:
-        "results/bootstrap/confidence_intervals/{test}.parquet",
-    output:
-        touch("results/tests/{test}.passed"),
+        cis=collect("results/bootstrap/confidence_intervals/{test}.parquet", test=tests),
+        raw=[lookup(f"datasets/{test}/path", within=config) for test in tests],
+    log:
+        "results/tests.tsv",
     params:
-        log2fc=lookup("tests/{test}/log2fc", within=config),
+        tests=tests,
+    conda:
+        "../envs/simulation.yaml"
     script:
         "../scripts/validate_results.py"

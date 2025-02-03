@@ -48,12 +48,6 @@ def sample_effect_sizes(sample):
     return effect_sizes
 
 
-# def accumulated_effect_size(sample):
-#     sizes = sample_effect_sizes(sample)
-#     breakpoint()
-#     return sizes.select(pl.col("log2_fold_change").sum()).unique().item()
-
-
 class ComparisonSummary:
     def __init__(self, comparison):
         (self.group_a, self.group_b), self.comparison = comparison
@@ -84,7 +78,6 @@ class ComparisonSummary:
                 "group_b": [self.group_b],
             }
         )
-
 
 effect_sizes = sample_effect_sizes(data)
 

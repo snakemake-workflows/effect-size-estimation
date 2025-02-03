@@ -1,3 +1,9 @@
+__use_yte__: true
+
+__definitions__:
+  - import random
+  - random.seed(12401984)
+
 datasets: {}
 
 n_bootstraps: 1000
@@ -5,13 +11,21 @@ seed: 214612
 
 tests:
   test1:
-    dataset: sim1
     log2fc: 2
     seed: 213768
     n_points: 10
 
   test2:
-    dataset: sim2
     log2fc: 0
     seed: 879823
     n_points: 10
+  
+  ?for i, seed in enumerate(random.randint(0, 100000) for _ in range(100)):
+    ?f"test_fickle_5_vs_5.5_{i}":
+      log2fc: 0.13750352374993502 # resemble mean difference in https://www.nature.com/articles/nmeth.3288 but shifted to 5 vs 5.5
+      seed: ?seed
+      n_points: 10
+    ?f"test_fickle_5_vs_5_{i}":
+      log2fc: 0.0
+      seed: ?seed
+      n_points: 10
