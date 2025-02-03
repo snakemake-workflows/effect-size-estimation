@@ -18,7 +18,7 @@ rule bootstrap:
         hists="results/bootstrap/histograms/{dataset}.parquet",
         cis="results/bootstrap/confidence_intervals/{dataset}.parquet",
     params:
-        vars=lookup("datasets/{dataset}/vars", within=config),
+        vars=lookup("datasets/{dataset}/variables", within=config),
         n_bootstraps=config["n_bootstraps"],
         seed=config["seed"],
         value=lookup("datasets/{dataset}/value", within=config),

@@ -4,7 +4,7 @@ rule plot_effect_bootstrap_histograms:
     output:
         "results/plots/{dataset}/bootstrap_histograms.html",
     params:
-        vars=lookup("datasets/{dataset}/vars", within=config),
+        vars=lookup("datasets/{dataset}/variables", within=config),
     conda:
         "../envs/pystats.yaml"
     script:
@@ -18,7 +18,7 @@ rule plot_dists_and_effects:
     output:
         "results/plots/{dataset}/distributions.html",
     params:
-        vars=lookup("datasets/{dataset}/vars", within=config),
+        vars=lookup("datasets/{dataset}/variables", within=config),
         value=lookup("datasets/{dataset}/value", within=config),
     conda:
         "../envs/pystats.yaml"
