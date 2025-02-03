@@ -44,7 +44,7 @@ rule bootstrap:
         "scripts/bootstrap.py"
 
 
-rule plot_bootstrap_histograms:
+rule plot_effect_bootstrap_histograms:
     input:
         "results/bootstrap/histograms/{dataset}.parquet"
     output:
@@ -57,7 +57,7 @@ rule plot_bootstrap_histograms:
         "scripts/plot_bootstrap_histograms.py"
 
 
-rule plot_distributions:
+rule plot_dists_and_effects:
     input:
         cis="results/bootstrap/confidence_intervals/{dataset}.parquet",
         data="results/data/{dataset}.sorted.parquet",
