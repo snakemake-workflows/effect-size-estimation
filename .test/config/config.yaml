@@ -1,0 +1,17 @@
+datasets: {}
+
+n_bootstraps: 1000
+seed: 214612
+
+tests:
+  test1:
+    dataset: sim1
+    log2fc: 2
+    seed: 213768
+    n_points: 10
+
+  test2:
+    dataset: sim2
+    log2fc: 0
+    seed: 879823
+    n_points: 10

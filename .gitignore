@@ -1,2 +1,6 @@
 /results
-/.snakemake/**/*
+.snakemake/**/*
+/resources
+/.test/resources
+/.test/results
+.test/.snakemake

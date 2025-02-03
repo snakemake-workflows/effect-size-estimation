@@ -1,7 +1,6 @@
 datasets:
   fig_1b_ft3:
     path: config/data/fig_1b_ft3.tsv
-    comparisons_path: config/comp/fig_1b_ft3.tsv
     vars:
       - genotype
       - diet
@@ -15,12 +14,6 @@ datasets:
         - EtOH
         - LDC+T3
         - EtOH+T3
-
-comparisons:
-  - group_a:
-      genotype: WT
-      diet: LDC
-
 
 n_bootstraps: 1000
 seed: 214612
