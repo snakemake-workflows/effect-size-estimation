@@ -1,6 +1,7 @@
 Measured {{ snakemake.params.value }} across {{ snakemake.params.vars|join("/") }}.
 The upper panel shows the data distributions.
-Below each distribution, we depict a conservative, uncertainty-aware estimate of the fold change.
+Below each distribution, we depict a conservative, uncertainty-aware estimate of the fold change against each other distribution right of it.
+The estimate can be interpreted as the strongest fold change such that the true fold change is stronger with a probability of :math:`\geq 95%`.
 Depicted fold changes are annotated as
 up-regulation: ``⏶``, down-regulation: ``⏷``, no change: ``=``, and almost no change (up/down fold change :math:`<1.05`): ≈.
 
