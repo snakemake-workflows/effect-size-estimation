@@ -9,3 +9,4 @@ dependencies:
   - vegafusion =1.6
   - vegafusion-python-embed =1.6
   - vl-convert-python =1.5
+  - statsmodels =0.14

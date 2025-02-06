@@ -15,6 +15,7 @@ rule all:
             type=["histograms"],
         ),
         collect(
-            "results/plots/{dataset}/distributions.html",
+            "results/plots/{dataset}/distributions_{mode}_effects.html",
             dataset=config["datasets"],
+            mode=["all", "selected"],
         )

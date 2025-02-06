@@ -2,7 +2,7 @@ tests = lookup("tests", within=config, default={})
 
 for test_name, test in tests.items():
     config["datasets"][test_name] = {
-        "path": f"resources/simulation/n_vars:2.n_points:{test['n_points']}_seed:{test['seed']}_log2fc:{test['log2fc']}.tsv",
+        "data": f"resources/simulation/n_vars:2.n_points:{test['n_points']}_seed:{test['seed']}_log2fc:{test['log2fc']}.tsv",
         "variables": ["var0", "var1"],
         "value": "value",
         "order": {
@@ -33,7 +33,7 @@ rule simulate_data:
 rule validate_results:
     input:
         cis=collect("results/bootstrap/confidence_intervals/{test}.parquet", test=tests),
-        raw=[lookup(f"datasets/{test}/path", within=config) for test in tests],
+        raw=[lookup(f"datasets/{test}/data", within=config) for test in tests],
     log:
         "results/tests.tsv",
     params:
