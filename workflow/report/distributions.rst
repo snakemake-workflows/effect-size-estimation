@@ -17,3 +17,10 @@ If, e.g. by coincidence, the data points of two compared distributions are not r
 The more data points one can consider, the smaller is the chance that this happens.
 Unlike, classical p-value based approaches though, the estimate provided here does not suffer from several well known issues like the winners curse, dichotomization into significant/non-significant (and the naturally occurring irreproducibility at the boundaries of the used signficance threshold), and most importantly the potential violation of assumptions about the underlying distributions (e.g. normality, homogeneous variance, etc.).
 See `Halsey et al. (2015) <https://doi.org/10.1038/nmeth.3288>`__ for a comprehensive discussion of these issues.
+
+{% if snakemake.wildcards.mode == "selected" %}
+In addition, we performed a Brunner-Munzel test in order to obtain a p-value for each shown comparison.
+The p-value tests the null hypothesis that for a pair of random values :math:`X` and :math:`Y` from the compared distributions the probability that :math:`X>Y` is equal to the probability that :math:`Y>X`.
+We represent p-values :math:`\leq 0.0001` with ``****``, p-values :math:`\leq 0.001` with ``***``, p-values :math:`\leq 0.01` with ``**``, and p-values :math:`\leq 0.05` with ``*``.
+The Brunner-Munzel test was chosen because it does not make assumptions about the underlying distributions (like e.g. equal variance).
+{% endif %}

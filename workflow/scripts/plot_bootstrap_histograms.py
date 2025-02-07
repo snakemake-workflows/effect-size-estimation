@@ -57,7 +57,7 @@ hist_chart = (
     .mark_tick(tooltip=True)
     .encode(
         alt.X("center").axis(
-            title="log2 fold change",
+            title="fold change",
             values=ticks,
             labelOverlap="greedy",
             labelExpr="datum.value < 0 ? '⏷' + format(pow(2, -datum.value), ',.0f')"

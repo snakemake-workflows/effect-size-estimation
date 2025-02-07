@@ -6,7 +6,7 @@ from statsmodels.stats.nonparametric import rank_compare_2indep
 
 pl.set_random_seed(snakemake.params.seed)
 
-data = pl.read_parquet(snakemake.input.data).with_columns(pl.concat_list(snakemake.params.vars).alias("case"))
+data = pl.read_parquet(snakemake.input.data)
 
 var_values = data.select(snakemake.params.vars).unique(maintain_order=True)
 
@@ -81,11 +81,10 @@ class ComparisonSummary:
         )
 
 def brunner_munzel_pvalue(comparison):
-    breakpoint()
     group_a = comparison["group_a"]
     group_b = comparison["group_b"]
-    x = data.filter(pl.col("case") == group_a)
-    y = data.filter(pl.col("case") == group_b)
+    x = data.filter(pl.col("case") == group_a).get_column(value_col)
+    y = data.filter(pl.col("case") == group_b).get_column(value_col)
     return rank_compare_2indep(x, y, use_t=False).pvalue
 
 effect_sizes = sample_effect_sizes(data)
@@ -100,6 +99,8 @@ bootstrap_hists = pl.concat([summary.hist() for summary in bootstrap_summaries])
 bootstrap_cis = pl.concat(
     [summary.confidence_interval() for summary in bootstrap_summaries]
 )
+
+data = data.with_columns(pl.concat_list(snakemake.params.vars).alias("case"))
 
 bootstrap_cis = bootstrap_cis.with_columns(pl.struct("group_a", "group_b").map_elements(brunner_munzel_pvalue, return_dtype=float).alias("brunner_munzel_pvalue"))
 

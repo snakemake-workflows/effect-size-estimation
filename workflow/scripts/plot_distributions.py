@@ -57,7 +57,9 @@ cis = cis.with_columns(
 )
 
 
-def fmt_fold_change(log2_fold_change: float) -> str:
+def fmt_fold_change(effect) -> str:
+    log2_fold_change = effect["conservative_log2_fold_change"]
+    pvalue = effect["brunner_munzel_pvalue"]
     if log2_fold_change > 0:
         direction = "⏶"
         fold_change = 2**log2_fold_change
@@ -70,11 +72,23 @@ def fmt_fold_change(log2_fold_change: float) -> str:
         if fold_change < 1.05:
             return "≈"
         else:
-            return f"{direction}{fold_change:.1f}"
+            if snakemake.wildcards.mode == "all":
+                pvalmark = ""
+            else:
+                pvalmark = "*"
+                if pvalue <= 0.0001:
+                    pvalmark *= 4
+                elif pvalue <= 0.001:
+                    pvalmark *= 3
+                elif pvalue <= 0.01:
+                    pvalmark *= 2
+                elif pvalue > 0.05:
+                    pvalmark = ""
+            return f"{direction}{fold_change:.1f} {pvalmark}"
 
 
 cis = cis.with_columns(
-    pl.col("conservative_log2_fold_change")
+    pl.struct("conservative_log2_fold_change", "brunner_munzel_pvalue")
     .map_elements(fmt_fold_change, return_dtype=str)
     .alias("fold change"),
     pl.concat_list([f"{var}_a" for var in snakemake.params.vars])
@@ -96,7 +110,7 @@ dist_chart = (
     .encode(
         alt.X("case", type="nominal", sort=None).axis(None),
         alt.Y(snakemake.params.value).axis(grid=False, title=None),
-        alt.Color("case").scale(domain=color_order),
+        alt.Color("case").scale(domain=color_order).legend(title=None),
     )
     .properties(
         width=230,
@@ -115,7 +129,7 @@ def get_all_effect_chart():
             alt.X("case_a", type="nominal", sort=None).axis(None),
             alt.Y("case_b", type="nominal", sort=None).axis(None).scale(reverse=True),
             alt.Text("fold change"),
-            alt.Color("case_b").scale(domain=color_order).legend(title=None),
+            alt.Color("case_b").scale(domain=color_order),
         )
         .properties(
             width=230,
