@@ -4,5 +4,5 @@
 /.test/resources
 /.test/results
 .test/.snakemake
-moeller-tmp
 /report
+moeller-tmp

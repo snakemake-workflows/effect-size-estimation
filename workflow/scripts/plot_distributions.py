@@ -100,10 +100,9 @@ cis = cis.with_columns(
 )
 
 
-# generate data frame with two rows for eahc group_a, group_b pair, one with
+# generate data frame with two rows for each group_a, group_b pair, one with
 # the group_a values and the corresponding snakemake.params.vars[0] value and the corresponding index,
 # and one with group_b values and the corresponding snakemake.params.vars[0] value and the corresponding index
-
 dist_chart = (
     alt.Chart(data)
     .mark_circle(tooltip=True)

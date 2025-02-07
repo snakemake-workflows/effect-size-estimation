@@ -55,7 +55,12 @@ class ComparisonSummary:
 
     def hist(self):
         fc = self.comparison.get_column("log2_fold_change")
-        fc.hist(bins=pl.linear_space(start=fc.min(), end=fc.max(), num_samples=10))
+        fc_max = fc.max()
+        n = 10
+        if fc.min() >= fc.max():
+            fc_max += 0.1
+            n = 2
+        fc.hist(bins=pl.linear_space(start=fc.min(), end=fc_max, num_samples=n))
         return (
             self.comparison.get_column("log2_fold_change")
             .hist(bin_count=30)
