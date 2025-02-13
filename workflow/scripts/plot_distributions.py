@@ -7,6 +7,13 @@ EPSILON = 0.1
 
 assert len(snakemake.params.vars) == 2, "only two variables are supported for now"
 
+mode = snakemake.wildcards.mode
+
+assert snakemake.params.min_fold_change >= 1.0, "min_fold_change must be greater than 1.0"
+min_conservative_log2_fold_change = math.log2(snakemake.params.min_fold_change)
+
+color_col = "case" if mode == "all" else snakemake.params.vars[1]
+
 data = pl.read_parquet(snakemake.input.data)
 var_values = (
     data.get_column(snakemake.params.vars[1]).unique(maintain_order=True).to_list()
@@ -17,7 +24,7 @@ data = data.with_columns(
     pl.concat_list(snakemake.params.vars).list.join(": ").alias("case"),
 )
 
-color_order = data.get_column("case").unique(maintain_order=True).to_list()
+color_order = data.get_column(color_col).unique(maintain_order=True).to_list()
 
 
 def get_conservative_log2_fold_change(ci) -> float:
@@ -72,7 +79,7 @@ def fmt_fold_change(effect) -> str:
         if fold_change < 1.05:
             return "≈"
         else:
-            if snakemake.wildcards.mode == "all":
+            if mode == "all":
                 pvalmark = ""
             else:
                 pvalmark = "*"
@@ -103,13 +110,18 @@ cis = cis.with_columns(
 # generate data frame with two rows for each group_a, group_b pair, one with
 # the group_a values and the corresponding snakemake.params.vars[0] value and the corresponding index,
 # and one with group_b values and the corresponding snakemake.params.vars[0] value and the corresponding index
+color_spec = alt.Color(color_col, type="nominal").scale(domain=color_order, range=snakemake.params.color_scheme)
+if snakemake.wildcards.legend == "yes":
+    color_spec = color_spec.legend(title=None)
+else:
+    color_spec = color_spec.legend(None)
 dist_chart = (
     alt.Chart(data)
     .mark_circle(tooltip=True)
     .encode(
         alt.X("case", type="nominal", sort=None).axis(None),
-        alt.Y(snakemake.params.value).axis(grid=False, title=None),
-        alt.Color("case").scale(domain=color_order).legend(title=None),
+        alt.Y(snakemake.params.value, type="quantitative").scale(zero=False).axis(grid=False, title=None),
+        color_spec,
     )
     .properties(
         width=230,
@@ -118,6 +130,29 @@ dist_chart = (
         title=snakemake.params.value,
     )
 )
+
+if mode == "selected":
+    # add an underline for each variable in snakemake.params.vars[0]
+    # alt.X should be the value of the first value of case of the respective group in the data frame
+    # alt.X2 should be the value of the last value of case of the respective group in the data frame
+    underline_data = (
+        data.group_by(snakemake.params.vars[0], maintain_order=True)
+        .agg([
+            pl.col(snakemake.params.vars[0]).first().alias("label"),
+            pl.col("case").first().alias("x"),
+            pl.col("case").last().alias("x2"),
+        ])
+    )
+
+    dist_chart += (alt.Chart(underline_data).mark_rule(strokeWidth=0.5).encode(
+        alt.X("x", type="nominal", sort=None).axis(None),
+        alt.X2("x2"),
+        alt.Y(value=-2),
+    ) + alt.Chart(underline_data).mark_text(dy=-4, align="left", fontSize=8).encode(
+        alt.X("x", type="nominal", sort=None).axis(None),
+        alt.Text("label"),
+        alt.Y(value=-2),
+    ))
 
 
 def get_all_effect_chart():
@@ -128,7 +163,7 @@ def get_all_effect_chart():
             alt.X("case_a", type="nominal", sort=None).axis(None),
             alt.Y("case_b", type="nominal", sort=None).axis(None).scale(reverse=True),
             alt.Text("fold change"),
-            alt.Color("case_b").scale(domain=color_order),
+            alt.Color("case_b", type="nominal").scale(domain=color_order),
         )
         .properties(
             width=230,
@@ -163,7 +198,7 @@ def get_selected_effect_chart():
                 for group in ["a", "b"]
             ],
         )
-        .filter(pl.col("fold change") != "=", pl.col("fold change") != "≈")
+        .filter(pl.col("fold change") != "=", pl.col("fold change") != "≈", pl.col("conservative_log2_fold_change").abs() >= min_conservative_log2_fold_change)
         .with_row_index()
     )
 
@@ -195,8 +230,11 @@ def get_selected_effect_chart():
             "placement"
         )
     )
+    if selected_cis.is_empty():
+        return None
+
     base = alt.Chart(selected_cis).encode(
-        alt.X("case_a", sort=None).axis(None),
+        alt.X("case_a", type="nominal", sort=None).axis(None),
         alt.Y("placement", type="ordinal").axis(None),
     ).properties(view=alt.ViewConfig(stroke=None))
 
@@ -205,10 +243,14 @@ def get_selected_effect_chart():
     )
 
 
-if snakemake.wildcards.mode == "all":
+if mode == "all":
     chart = dist_chart & get_all_effect_chart()
 else:
-    chart = dist_chart & get_selected_effect_chart()
+    effects = get_selected_effect_chart()
+    if effects is not None:
+        chart = dist_chart & effects
+    else:
+        chart = dist_chart
 
 chart.configure_concat(spacing=0).resolve_scale(
     y="independent", x="shared", color="shared"
