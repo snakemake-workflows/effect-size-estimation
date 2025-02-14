@@ -13,5 +13,9 @@ datasets:
         - a
         - b
 
+min_fold_change: 1.0
 n_bootstraps: 1000
 seed: 214612
+# consider using color blind friendly colors like https://personal.sron.nl/~pault/#sec:qualitative
+# or https://mikemol.github.io/technique/colorblind/2018/02/11/color-safe-palette.html
+color_scheme: ["#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7"]
