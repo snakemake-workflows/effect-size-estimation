@@ -4,10 +4,9 @@ rule plot_effect_bootstrap_histograms:
     output:
         report(
             "results/plots/{dataset}/bootstrap_histograms.html",
-            category="{dataset}",
+            category="Posterior fold change distribution plots",
             labels={
-                "plot": "Posterior fold change distributions",
-                "effects": "all",
+                "dataset": "{dataset}",
             },
             caption="../report/effect_histograms.rst",
         ),
@@ -27,10 +26,9 @@ rule plot_dists_and_effects:
     output:
         report(
             "results/plots/{dataset}/distributions_{mode,all|selected}_legend_{legend,yes|no}_effects.html",
-            category="{dataset}",
+            category="Distribution and fold change plots ({mode} comparisons)",
             labels={
-                "plot": "Data distributions and conservative fold changes",
-                "effects": "{mode}",
+                "dataset": "{dataset}",
                 "legend": "{legend}",
             },
             caption="../report/distributions.rst",

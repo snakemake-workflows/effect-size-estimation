@@ -6,11 +6,12 @@ from statsmodels.stats.nonparametric import rank_compare_2indep
 
 pl.set_random_seed(snakemake.params.seed)
 
+value_col = snakemake.params.value
+
 data = pl.read_parquet(snakemake.input.data)
+data = data.select(snakemake.params.vars + [value_col])
 
 var_values = data.select(snakemake.params.vars).unique(maintain_order=True)
-
-value_col = snakemake.params.value
 
 comparisons = list(
     combinations(
