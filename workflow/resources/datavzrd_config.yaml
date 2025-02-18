@@ -1,0 +1,82 @@
+__use_yte__: true
+
+name: ?f"Tabular data for {snakemake.wildcards.dataset}"
+
+datasets:
+  observations:
+    path: ?snakemake.input.data
+    separator: "\t"
+    offer-excel: true
+  confidence_intervals:
+    path: ?snakemake.input.cis
+    separator: "\t"
+    offer-excel: true
+
+views:
+  confidence_intervals:
+    dataset: confidence_intervals
+    render-table:
+      columns:
+        brunner_munzel_pvalue:
+          precision: 2
+          plot:
+            heatmap:
+              scale: linear
+              range:
+                - white
+                - blue
+        group_b:
+          plot:
+            pills:
+              separator: ","
+              color-scheme: category20
+              aux-domain-columns:
+                - group_a
+        lower:
+          precision: 2
+          plot:
+            heatmap:
+              scale: linear
+              range:
+                - white
+                - blue
+        group_a:
+          plot:
+            pills:
+              separator: ","
+              color-scheme: category20
+              aux-domain-columns:
+                - group_b
+        upper:
+          precision: 2
+          plot:
+            heatmap:
+              scale: linear
+              range:
+                - white
+                - blue
+  observations:
+    desc: |
+      ?f"Observations of the dataset {snakemake.wildcards.dataset}. Also see corresponding
+      comparison plots for [selected effects]{snakemake.report_href(snakemake.params.effect_plot_selected)},
+      [all effects]({snakemake.report_href(snakemake.params.effect_plot_all)}) and 
+      [associated posterior distribution estimates]({snakemake.report_href(snakemake.params.hist_plot)}).
+      "
+    dataset: observations
+    render-table:
+      columns:
+        ?for variable in snakemake.params.variables:
+          ?variable:
+            plot:
+              heatmap:
+                scale: ordinal
+                color-scheme: category20
+                aux-domain-columns: ?snakemake.params.variables
+        ?snakemake.params.value_column:
+          precision: 2
+          plot:
+            heatmap:
+              scale: linear
+              range:
+                - white
+                - blue

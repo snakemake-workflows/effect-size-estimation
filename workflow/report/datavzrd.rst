@@ -1,0 +1,1 @@
+Tabular data underlying the plots found in the other categories.

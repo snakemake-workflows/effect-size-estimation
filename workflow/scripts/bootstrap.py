@@ -86,12 +86,14 @@ class ComparisonSummary:
             }
         )
 
+
 def brunner_munzel_pvalue(comparison):
     group_a = comparison["group_a"]
     group_b = comparison["group_b"]
     x = data.filter(pl.col("case") == group_a).get_column(value_col)
     y = data.filter(pl.col("case") == group_b).get_column(value_col)
     return rank_compare_2indep(x, y, use_t=False).pvalue
+
 
 effect_sizes = sample_effect_sizes(data)
 
@@ -108,7 +110,11 @@ bootstrap_cis = pl.concat(
 
 data = data.with_columns(pl.concat_list(snakemake.params.vars).alias("case"))
 
-bootstrap_cis = bootstrap_cis.with_columns(pl.struct("group_a", "group_b").map_elements(brunner_munzel_pvalue, return_dtype=float).alias("brunner_munzel_pvalue"))
+bootstrap_cis = bootstrap_cis.with_columns(
+    pl.struct("group_a", "group_b")
+    .map_elements(brunner_munzel_pvalue, return_dtype=float)
+    .alias("brunner_munzel_pvalue")
+).select("group_a", "group_b", "lower", "upper", "brunner_munzel_pvalue")
 
 bootstrap_hists.write_parquet(snakemake.output.hists)
 bootstrap_cis.write_parquet(snakemake.output.cis)
