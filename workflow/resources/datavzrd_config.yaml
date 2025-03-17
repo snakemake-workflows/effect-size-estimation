@@ -14,6 +14,12 @@ datasets:
 
 views:
   confidence_intervals:
+    desc: |
+      Fold change confidence intervals. The table shows the lower (5%) and upper (95%)
+      bounds of the confidence intervals
+      for the fold change between the groups.
+      The p-value is calculated using the
+      [Brunner-Munzel test](https://en.wikipedia.org/wiki/Brunner_Munzel_Test).
     dataset: confidence_intervals
     render-table:
       columns:
@@ -57,11 +63,11 @@ views:
                 - blue
   observations:
     desc: |
-      ?f"Observations of the dataset {snakemake.wildcards.dataset}. Also see corresponding
-      comparison plots for [selected effects]{snakemake.report_href(snakemake.params.effect_plot_selected)},
+      ?f"""Observations of the dataset {snakemake.wildcards.dataset}. Also see corresponding
+      comparison plots for [selected effects]({snakemake.report_href(snakemake.params.effect_plot_selected)}),
       [all effects]({snakemake.report_href(snakemake.params.effect_plot_all)}) and 
       [associated posterior distribution estimates]({snakemake.report_href(snakemake.params.hist_plot)}).
-      "
+      """
     dataset: observations
     render-table:
       columns:
