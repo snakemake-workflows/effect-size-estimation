@@ -10,6 +10,8 @@ rule plot_effect_bootstrap_histograms:
             },
             caption="../report/effect_histograms.rst",
         ),
+    log:
+        "logs/plot_effect_bootstrap_histograms/{dataset}.log",
     params:
         vars=lookup("datasets/{dataset}/variables", within=config),
     conda:
@@ -33,6 +35,8 @@ rule plot_dists_and_effects:
             },
             caption="../report/distributions.rst",
         ),
+    log:
+        "logs/plot_dists_and_effects/{dataset}_{mode}_{legend}.log",
     params:
         vars=lookup("datasets/{dataset}/variables", within=config),
         value=get_value_column,

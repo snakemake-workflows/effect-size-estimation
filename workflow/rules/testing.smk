@@ -19,6 +19,8 @@ rule all_tests:
 rule simulate_data:
     output:
         "resources/simulation/n_vars:{n_vars}.n_points:{n_points}_seed:{seed}_log2fc:{log2fc}.tsv",
+    log:
+        "logs/simulate_data/n_vars_{n_vars}_n_points_{n_points}_seed_{seed}_log2fc_{log2fc}.log",
     params:
         n_vars=evaluate("int({n_vars})"),
         n_points=evaluate("int({n_points})"),
@@ -34,8 +36,10 @@ rule validate_results:
     input:
         cis=collect("results/bootstrap/confidence_intervals/{test}.parquet", test=tests),
         raw=[lookup(f"datasets/{test}/data", within=config) for test in tests],
-    log:
+    output:
         "results/tests.tsv",
+    log:
+        "logs/validate_results.log",
     params:
         tests=tests,
     conda:

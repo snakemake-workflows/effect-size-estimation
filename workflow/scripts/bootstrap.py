@@ -1,8 +1,13 @@
+import sys
+sys.stderr = open(snakemake.log[0], "w")
+
+from functools import partial
 from itertools import combinations
 import math
 
 import polars as pl
 from statsmodels.stats.nonparametric import rank_compare_2indep
+from statsmodels.stats.multitest import multipletests
 
 pl.set_random_seed(snakemake.params.seed)
 
@@ -110,11 +115,26 @@ bootstrap_cis = pl.concat(
 
 data = data.with_columns(pl.concat_list(snakemake.params.vars).alias("case"))
 
-bootstrap_cis = bootstrap_cis.with_columns(
-    pl.struct("group_a", "group_b")
-    .map_elements(brunner_munzel_pvalue, return_dtype=float)
-    .alias("brunner_munzel_pvalue")
-).select("group_a", "group_b", "lower", "upper", "brunner_munzel_pvalue")
+def multtest(pvals):
+    _, pvals_corrected, _, _ = multipletests(
+        pvals, method="holm", is_sorted=False, returnsorted=False
+    )
+    return pvals_corrected
+
+
+bootstrap_cis = (
+    bootstrap_cis.select("group_a", "group_b", "lower", "upper")
+    .with_columns(
+        pl.struct("group_a", "group_b")
+        .map_elements(brunner_munzel_pvalue, return_dtype=float)
+        .alias("brunner_munzel_pvalue")
+    )
+    .with_columns(
+        pl.col("brunner_munzel_pvalue")
+        .map_batches(multtest)
+        .alias("brunner_munzel_adjusted_pvalue")
+    )
+)
 
 bootstrap_hists.write_parquet(snakemake.output.hists)
 bootstrap_cis.write_parquet(snakemake.output.cis)

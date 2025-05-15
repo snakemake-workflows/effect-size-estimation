@@ -1,3 +1,6 @@
+import sys
+sys.stderr = open(snakemake.log[0], "w")
+
 import math
 import polars as pl
 import altair as alt
@@ -63,10 +66,10 @@ hist_chart = (
             labelExpr="datum.value < 0 ? '⏷' + format(pow(2, -datum.value), ',.0f')"
             " : (datum.value == 0.0 ? '=' : "
             "('⏶' + format(pow(2, datum.value), ',.0f')))",
-        ),
+        ).axis(grid=True),
         alt.Size("count").legend(None),
         alt.Y("comparison", type="nominal", sort=None).axis(labels=False, title=None),
     )
 )
 
-alt.hconcat(*(label_charts + [hist_chart]), spacing=0).save(snakemake.output[0])
+alt.hconcat(*(label_charts + [hist_chart]), spacing=0).interactive().save(snakemake.output[0])

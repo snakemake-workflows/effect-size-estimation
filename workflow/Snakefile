@@ -7,6 +7,10 @@ include: "rules/datavzrd.smk"
 include: "rules/testing.smk"
 
 
+report:
+    "report/workflow.rst"
+
+
 rule all:
     input:
         collect(

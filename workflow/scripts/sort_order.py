@@ -1,3 +1,6 @@
+import sys
+sys.stderr = open(snakemake.log[0], "w")
+
 import polars as pl
 
 data = pl.read_csv(snakemake.input[0], separator="\t")

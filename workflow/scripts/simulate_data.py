@@ -1,3 +1,6 @@
+import sys
+sys.stderr = open(snakemake.log[0], "w")
+
 import polars as pl
 import random
 from scipy.stats import norm

@@ -1,3 +1,6 @@
+import sys
+sys.stderr = open(snakemake.log[0], "w")
+
 import math
 import polars as pl
 from scipy.stats import ttest_ind
@@ -53,7 +56,7 @@ predictions = pl.concat(
 
 invalid = predictions.filter(~pl.col("approx_within_ci"))
 
-predictions.write_csv(snakemake.log[0], separator="\t")
+predictions.write_csv(snakemake.output[0], separator="\t")
 
 if invalid.height > 0:
     raise ValueError(

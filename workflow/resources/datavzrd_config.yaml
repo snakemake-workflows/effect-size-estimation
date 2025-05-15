@@ -18,12 +18,14 @@ views:
       Fold change confidence intervals. The table shows the lower (5%) and upper (95%)
       bounds of the confidence intervals
       for the fold change between the groups.
-      The p-value is calculated using the
-      [Brunner-Munzel test](https://en.wikipedia.org/wiki/Brunner_Munzel_Test).
+      The adjusted p-value is calculated using the
+      [Brunner-Munzel test](https://en.wikipedia.org/wiki/Brunner_Munzel_Test) and
+      applying the Bonferroni-Holm method for multiple testing correction.
     dataset: confidence_intervals
     render-table:
       columns:
-        brunner_munzel_pvalue:
+        brunner_munzel_adjusted_pvalue:
+          label: adjusted p-value
           precision: 2
           plot:
             heatmap:

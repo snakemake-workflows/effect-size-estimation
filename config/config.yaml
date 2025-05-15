@@ -12,6 +12,8 @@ datasets:
       var1:
         - a
         - b
+    # optional: restrict comparisons to a subset of the variables
+    # comparisons: config/comparisons/something.tsv
 
 min_fold_change: 1.0
 n_bootstraps: 1000
