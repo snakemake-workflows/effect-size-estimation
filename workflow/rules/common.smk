@@ -6,7 +6,9 @@ def get_value_column(wildcards):
         data_path = lookup(f"datasets/{dataset}/data", within=config)
         with open(data_path) as f:
             header = f.readline().strip().split("\t")
-            col_idx = lookup(f"datasets/{dataset}/value_column_index", within=config, default=None)
+            col_idx = lookup(
+                f"datasets/{dataset}/value_column_index", within=config, default=None
+            )
             if col_idx is not None:
                 return header[col_idx]
             elif len(header) == n_vars + 1:

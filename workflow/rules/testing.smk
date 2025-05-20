@@ -14,7 +14,8 @@ for test_name, test in tests.items():
 
 rule all_tests:
     input:
-        "results/tests.tsv"
+        "results/tests.tsv",
+
 
 rule simulate_data:
     output:

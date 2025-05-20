@@ -2,9 +2,9 @@ rule parquet_to_tsv:
     input:
         "{prefix}.parquet",
     output:
-        "{prefix}.tsv"
+        "{prefix}.tsv",
     log:
-        "logs/parquet_to_tsv/{prefix}.log"
+        "logs/parquet_to_tsv/{prefix}.log",
     conda:
         "../envs/pystats.yaml"
     script:
@@ -25,9 +25,9 @@ rule datavzrd_report:
                 "dataset": "{dataset}",
             },
             caption="../report/datavzrd.rst",
-        )
+        ),
     log:
-        "logs/datavzrd_report/{dataset}.log"
+        "logs/datavzrd_report/{dataset}.log",
     params:
         value_column=get_value_column,
         variables=lookup("datasets/{dataset}/variables", within=config),

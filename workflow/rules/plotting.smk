@@ -24,7 +24,9 @@ rule plot_dists_and_effects:
     input:
         cis="results/bootstrap/confidence_intervals/{dataset}.parquet",
         data="results/data/{dataset}.sorted.parquet",
-        comparisons=local(lookup("datasets/{dataset}/comparisons", within=config, default=[])),
+        comparisons=local(
+            lookup("datasets/{dataset}/comparisons", within=config, default=[])
+        ),
     output:
         report(
             "results/plots/{dataset}/distributions_{mode,all|selected}_legend_{legend,yes|no}_effects.html",

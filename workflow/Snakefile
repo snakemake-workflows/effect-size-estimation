@@ -1,5 +1,6 @@
 configfile: "config/config.yaml"
 
+
 include: "rules/common.smk"
 include: "rules/processing.smk"
 include: "rules/plotting.smk"
@@ -7,8 +8,7 @@ include: "rules/datavzrd.smk"
 include: "rules/testing.smk"
 
 
-report:
-    "report/workflow.rst"
+report: "report/workflow.rst"
 
 
 rule all:
@@ -27,4 +27,4 @@ rule all:
         collect(
             "results/datavzrd/{dataset}",
             dataset=config["datasets"],
-        )
+        ),
