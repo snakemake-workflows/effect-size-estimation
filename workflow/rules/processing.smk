@@ -1,6 +1,6 @@
 rule sort_data:
     input:
-        lookup("datasets/{dataset}/data", within=config),
+        local(lookup("datasets/{dataset}/data", within=config)),
     output:
         "results/data/{dataset}.sorted.parquet",
     log:
