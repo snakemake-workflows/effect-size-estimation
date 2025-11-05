@@ -8,8 +8,7 @@ import altair as alt
 
 EPSILON = 0.1
 
-assert len(snakemake.params.vars) == 2, "only two variables are supported for now"
-
+vars = snakemake.params.vars
 mode = snakemake.wildcards.mode
 
 assert (
@@ -17,15 +16,23 @@ assert (
 ), "min_fold_change must be greater than 1.0"
 min_conservative_log2_fold_change = math.log2(snakemake.params.min_fold_change)
 
-color_col = "case" if mode == "all" else snakemake.params.vars[1]
-
 data = pl.read_parquet(snakemake.input.data)
+
+if len(vars) > 2:
+    # combine vars[1:] into a single variable with ":" as separator
+    data = data.with_columns(
+        pl.concat_list(vars[1:]).list.join(": ").alias("combined_var"),
+    )
+    vars = [vars[0], "combined_var"]
+
+color_col = "case" if mode == "all" else vars[1]
+
 var_values = (
-    data.get_column(snakemake.params.vars[1]).unique(maintain_order=True).to_list()
+    data.get_column(vars[1]).unique(maintain_order=True).to_list()
 )
 var_indexes = {value: i for i, value in enumerate(var_values)}
 data = data.with_columns(
-    pl.col(snakemake.params.vars[1]).replace_strict(var_indexes).alias("index"),
+    pl.col(vars[1]).replace_strict(var_indexes).alias("index"),
     pl.concat_list(snakemake.params.vars).list.join(": ").alias("case"),
 )
 
@@ -50,7 +57,7 @@ cis = (
         [
             pl.col(f"group_{group}").list.get(i).alias(f"{varname}_{group}")
             for group in ["a", "b"]
-            for i, varname in enumerate(snakemake.params.vars)
+            for i, varname in enumerate(vars)
         ],
     )
 )
@@ -60,7 +67,7 @@ cis = cis.with_columns(
         pl.Series(
             [
                 var_indexes[value]
-                for value in cis.get_column(f"{snakemake.params.vars[1]}_{group}")
+                for value in cis.get_column(f"{vars[1]}_{group}")
             ]
         ).alias(f"index_{group}")
         for group in ["a", "b"]
@@ -102,18 +109,18 @@ cis = cis.with_columns(
     pl.struct("conservative_log2_fold_change", "brunner_munzel_adjusted_pvalue")
     .map_elements(fmt_fold_change, return_dtype=str)
     .alias("fold change"),
-    pl.concat_list([f"{var}_a" for var in snakemake.params.vars])
+    pl.concat_list([f"{var}_a" for var in vars])
     .list.join(": ")
     .alias("case_a"),
-    pl.concat_list([f"{var}_b" for var in snakemake.params.vars])
+    pl.concat_list([f"{var}_b" for var in vars])
     .list.join(": ")
     .alias("case_b"),
 )
 
 
 # generate data frame with two rows for each group_a, group_b pair, one with
-# the group_a values and the corresponding snakemake.params.vars[0] value and the corresponding index,
-# and one with group_b values and the corresponding snakemake.params.vars[0] value and the corresponding index
+# the group_a values and the corresponding vars[0] value and the corresponding index,
+# and one with group_b values and the corresponding vars[0] value and the corresponding index
 color_spec = alt.Color(color_col, type="nominal").scale(
     domain=color_order, range=snakemake.params.color_scheme
 )
@@ -140,12 +147,12 @@ dist_chart = (
 )
 
 if mode == "selected":
-    # add an underline for each variable in snakemake.params.vars[0]
+    # add an underline for each variable in vars[0]
     # alt.X should be the value of the first value of case of the respective group in the data frame
     # alt.X2 should be the value of the last value of case of the respective group in the data frame
-    underline_data = data.group_by(snakemake.params.vars[0], maintain_order=True).agg(
+    underline_data = data.group_by(vars[0], maintain_order=True).agg(
         [
-            pl.col(snakemake.params.vars[0]).first().alias("label"),
+            pl.col(vars[0]).first().alias("label"),
             pl.col("case").first().alias("x"),
             pl.col("case").last().alias("x2"),
         ]
@@ -201,7 +208,7 @@ def get_selected_effect_chart():
             how="semi",
             on=[
                 f"{var}_{group}"
-                for var in snakemake.params.vars
+                for var in vars
                 for group in ["a", "b"]
             ],
         )
