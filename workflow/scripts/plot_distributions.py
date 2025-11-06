@@ -244,6 +244,7 @@ def get_selected_effect_chart():
         case: i
         for i, case in enumerate(data.get_column("case").unique(maintain_order=True))
     }
+    print(case_idx, file=sys.stderr)
 
     placements = defaultdict(list)
     placements[0].append(0)
