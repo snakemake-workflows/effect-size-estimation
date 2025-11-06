@@ -61,7 +61,7 @@ cis = (
                 # the first element can be taken as is, the second and 
                 # potential rest is joined with ','
                 i, i + 1 if i == 0 else None
-            ).join(VAR_SEP).alias(f"{varname}_{group}")
+            ).list.join(VAR_SEP).alias(f"{varname}_{group}")
             for group in ["a", "b"]
             for i, varname in enumerate(vars)
         ],
