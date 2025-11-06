@@ -35,7 +35,7 @@ var_values = (
 var_indexes = {value: i for i, value in enumerate(var_values)}
 data = data.with_columns(
     pl.col(vars[1]).replace_strict(var_indexes).alias("index"),
-    pl.concat_list(snakemake.params.vars).list.join(": ").alias("case"),
+    pl.concat_list(vars).list.join(": ").alias("case"),
 )
 
 color_order = data.get_column(color_col).unique(maintain_order=True).to_list()
@@ -244,7 +244,6 @@ def get_selected_effect_chart():
         case: i
         for i, case in enumerate(data.get_column("case").unique(maintain_order=True))
     }
-    print(case_idx, file=sys.stderr)
 
     placements = defaultdict(list)
     placements[0].append(0)
