@@ -196,6 +196,17 @@ def get_all_effect_chart():
 def get_selected_effect_chart():
     comparisons = pl.read_csv(snakemake.input.comparisons, separator="\t")
 
+    if len(snakemake.params.vars) > 2:
+        # combine vars[1:] into a single variable
+        comparisons = comparisons.with_columns(
+            [
+                pl.concat_list([f"{var}_{group}" for var in snakemake.params.vars[1:]]).list.join(VAR_SEP).alias(
+                    f"combined_var_{group}"
+                )
+                for group in ["a", "b"]
+            ]
+        )
+
     def swap_colname(col):
         return col[:-1] + ("b" if col.endswith("_a") else "a")
 
