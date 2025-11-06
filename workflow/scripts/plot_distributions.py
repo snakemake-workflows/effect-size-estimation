@@ -7,6 +7,7 @@ import polars as pl
 import altair as alt
 
 EPSILON = 0.1
+VAR_SEP = ","
 
 vars = snakemake.params.vars
 mode = snakemake.wildcards.mode
@@ -21,9 +22,10 @@ data = pl.read_parquet(snakemake.input.data)
 if len(vars) > 2:
     # combine vars[1:] into a single variable with ":" as separator
     data = data.with_columns(
-        pl.concat_list(vars[1:]).list.join(": ").alias("combined_var"),
+        pl.concat_list(vars[1:]).list.join(VAR_SEP).alias("combined_var"),
     )
     vars = [vars[0], "combined_var"]
+    join_vars = vars[1:]
 
 color_col = "case" if mode == "all" else vars[1]
 
@@ -55,7 +57,11 @@ cis = (
     )
     .with_columns(
         [
-            pl.col(f"group_{group}").list.get(i).alias(f"{varname}_{group}")
+            pl.col(f"group_{group}").list.slice(
+                # the first element can be taken as is, the second and 
+                # potential rest is joined with ','
+                i, i + 1 if i == 0 else None
+            ).join(VAR_SEP).alias(f"{varname}_{group}")
             for group in ["a", "b"]
             for i, varname in enumerate(vars)
         ],
