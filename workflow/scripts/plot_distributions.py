@@ -208,6 +208,8 @@ def get_selected_effect_chart():
         ],
         how="diagonal",
     )
+    print(cis, file=sys.stderr)
+    print(comparisons, file=sys.stderr)
     selected_cis = (
         cis.join(
             comparisons,
