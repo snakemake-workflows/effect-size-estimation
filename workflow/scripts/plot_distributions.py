@@ -247,6 +247,8 @@ def get_selected_effect_chart():
         for i, case in enumerate(data.get_column("case").unique(maintain_order=True))
     }
 
+    print(selected_cis)
+
     placements = defaultdict(list)
     placements[0].append(0)
     for i in range(1, selected_cis.height):
@@ -260,6 +262,7 @@ def get_selected_effect_chart():
                 break
         if not placed:
             placements[len(placements)].append(i)
+    print(placements)
 
     row_placements = {
         row: placement for placement, rows in placements.items() for row in rows
