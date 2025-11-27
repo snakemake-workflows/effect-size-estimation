@@ -163,6 +163,8 @@ if mode == "selected":
             pl.col("case").last().alias("x2"),
         ]
     )
+    print(data)
+    print(underline_data)
 
     dist_chart += alt.Chart(underline_data).mark_rule(strokeWidth=0.5).encode(
         alt.X("x", type="nominal", sort=None).axis(None),
