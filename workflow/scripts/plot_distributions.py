@@ -37,6 +37,7 @@ data = data.with_columns(
     pl.col(vars[1]).replace_strict(var_indexes).alias("index"),
     pl.concat_list(vars).list.join(": ").alias("case"),
 )
+print(data)
 
 color_order = data.get_column(color_col).unique(maintain_order=True).to_list()
 
@@ -221,8 +222,6 @@ def get_selected_effect_chart():
         ],
         how="diagonal",
     )
-    print(cis, file=sys.stderr)
-    print(comparisons, file=sys.stderr)
     selected_cis = (
         cis.join(
             comparisons,
@@ -247,9 +246,6 @@ def get_selected_effect_chart():
         for i, case in enumerate(data.get_column("case").unique(maintain_order=True))
     }
 
-    print(selected_cis)
-    print(case_idx)
-
     placements = defaultdict(list)
     placements[0].append(0)
     for i in range(1, selected_cis.height):
@@ -263,12 +259,10 @@ def get_selected_effect_chart():
                 break
         if not placed:
             placements[len(placements)].append(i)
-    print(placements)
 
     row_placements = {
         row: placement for placement, rows in placements.items() for row in rows
     }
-    print(row_placements)
 
     selected_cis = selected_cis.with_columns(
         pl.Series([row_placements[row] for row in range(selected_cis.height)]).alias(
