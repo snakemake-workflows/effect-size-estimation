@@ -248,6 +248,7 @@ def get_selected_effect_chart():
     }
 
     print(selected_cis)
+    print(case_idx)
 
     placements = defaultdict(list)
     placements[0].append(0)
@@ -267,6 +268,7 @@ def get_selected_effect_chart():
     row_placements = {
         row: placement for placement, rows in placements.items() for row in rows
     }
+    print(row_placements)
 
     selected_cis = selected_cis.with_columns(
         pl.Series([row_placements[row] for row in range(selected_cis.height)]).alias(
