@@ -231,6 +231,8 @@ def get_selected_effect_chart():
     )
     print(comparisons)
 
+    print(cis)
+
     selected_cis = (
         cis.join(
             comparisons,
