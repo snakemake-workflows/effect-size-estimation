@@ -231,6 +231,7 @@ def get_selected_effect_chart():
     )
     print(comparisons)
 
+    print(cis.columns)
     print(cis)
 
     selected_cis = (
@@ -243,13 +244,12 @@ def get_selected_effect_chart():
                 for group in ["a", "b"]
             ],
         )
-        # DBG UNDO
-        # .filter(
-        #     pl.col("fold change") != "=",
-        #     pl.col("fold change") != "≈",
-        #     pl.col("conservative_log2_fold_change").abs()
-        #     >= min_conservative_log2_fold_change,
-        # )
+        .filter(
+            pl.col("fold change") != "=",
+            pl.col("fold change") != "≈",
+            pl.col("conservative_log2_fold_change").abs()
+            >= min_conservative_log2_fold_change,
+        )
         .with_row_index()
     )
     print(selected_cis)
