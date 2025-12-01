@@ -21,12 +21,11 @@ min_conservative_log2_fold_change = math.log2(snakemake.params.min_fold_change)
 data = pl.read_parquet(snakemake.input.data)
 
 if len(vars) > 2:
-    # combine vars[1:] into a single variable with ":" as separator
+    # combine vars[1:] into a single variable
     data = data.with_columns(
         pl.concat_list(vars[1:]).list.join(VAR_SEP).alias("combined_var"),
     )
     vars = [vars[0], "combined_var"]
-    join_vars = vars[1:]
 
 color_col = "case" if mode == "all" else vars[1]
 
@@ -168,15 +167,16 @@ if mode == "selected":
     print(data)
     print(underline_data)
 
-    dist_chart += alt.Chart(underline_data).mark_rule(strokeWidth=0.5).encode(
-        alt.X("x", type="nominal", sort=None).axis(None),
-        alt.X2("x2"),
-        alt.Y(value=-2),
-    ) + alt.Chart(underline_data).mark_text(dy=-4, align="left", fontSize=8).encode(
-        alt.X("x", type="nominal", sort=None).axis(None),
-        alt.Text("label"),
-        alt.Y(value=-2),
-    )
+    # DBG UNDO
+    # dist_chart += alt.Chart(underline_data).mark_rule(strokeWidth=0.5).encode(
+    #     alt.X("x", type="nominal", sort=None).axis(None),
+    #     alt.X2("x2"),
+    #     alt.Y(value=-2),
+    # ) + alt.Chart(underline_data).mark_text(dy=-4, align="left", fontSize=8).encode(
+    #     alt.X("x", type="nominal", sort=None).axis(None),
+    #     alt.Text("label"),
+    #     alt.Y(value=-2),
+    # )
 
 
 def get_all_effect_chart():
