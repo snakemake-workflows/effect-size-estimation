@@ -229,20 +229,19 @@ def get_selected_effect_chart():
         ],
         how="diagonal",
     )
-    print(comparisons)
-
-    print(cis.columns)
-    print(cis)
+    joincols = [
+        f"{var}_{group}"
+        for var in vars
+        for group in ["a", "b"]
+    ]
+    print(comparisons.select(joincols))
+    print(cis.select(joincols))
 
     selected_cis = (
         cis.join(
             comparisons,
             how="semi",
-            on=[
-                f"{var}_{group}"
-                for var in vars
-                for group in ["a", "b"]
-            ],
+            on=joincols,
         )
         .filter(
             pl.col("fold change") != "=",
