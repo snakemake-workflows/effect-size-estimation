@@ -6,6 +6,8 @@ import math
 import polars as pl
 import altair as alt
 
+pl.Config.set_tbl_rows(100)
+
 EPSILON = 0.1
 VAR_SEP = ", "
 FIRST_VAR_SEP = ": "
@@ -227,6 +229,8 @@ def get_selected_effect_chart():
         ],
         how="diagonal",
     )
+    print(comparisons)
+
     selected_cis = (
         cis.join(
             comparisons,
@@ -245,6 +249,7 @@ def get_selected_effect_chart():
         )
         .with_row_index()
     )
+    print(selected_cis)
 
     case_idx = {
         case: i
