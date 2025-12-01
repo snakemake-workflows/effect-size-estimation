@@ -6,7 +6,11 @@ import math
 import polars as pl
 import altair as alt
 
+pl.Config.set_tbl_rows(100)
+
 EPSILON = 0.1
+VAR_SEP = ", "
+FIRST_VAR_SEP = ": "
 
 vars = snakemake.params.vars
 mode = snakemake.wildcards.mode
@@ -16,14 +20,20 @@ assert (
 ), "min_fold_change must be greater than 1.0"
 min_conservative_log2_fold_change = math.log2(snakemake.params.min_fold_change)
 
-data = pl.read_parquet(snakemake.input.data)
+# Stably sort the data such that the first variable is grouped together
+# This is necessary because we draw a rule to label x-axis with first variable
+# values.
+data = pl.read_parquet(snakemake.input.data).with_row_count("idx").with_columns(
+    pl.first("idx").over(vars[0]).alias("group_first_idx")
+).sort(["group_first_idx", "idx"]).drop(["idx", "group_first_idx"])
 
 if len(vars) > 2:
-    # combine vars[1:] into a single variable with ":" as separator
+    combined_var = VAR_SEP.join(vars[1:])
+    # combine vars[1:] into a single variable
     data = data.with_columns(
-        pl.concat_list(vars[1:]).list.join(": ").alias("combined_var"),
+        pl.concat_list(vars[1:]).list.join(VAR_SEP).alias(combined_var),
     )
-    vars = [vars[0], "combined_var"]
+    vars = [vars[0], combined_var]
 
 color_col = "case" if mode == "all" else vars[1]
 
@@ -33,7 +43,7 @@ var_values = (
 var_indexes = {value: i for i, value in enumerate(var_values)}
 data = data.with_columns(
     pl.col(vars[1]).replace_strict(var_indexes).alias("index"),
-    pl.concat_list(snakemake.params.vars).list.join(": ").alias("case"),
+    pl.concat_list(vars).list.join(FIRST_VAR_SEP).alias("case"),
 )
 
 color_order = data.get_column(color_col).unique(maintain_order=True).to_list()
@@ -55,7 +65,11 @@ cis = (
     )
     .with_columns(
         [
-            pl.col(f"group_{group}").list.get(i).alias(f"{varname}_{group}")
+            pl.col(f"group_{group}").list.slice(
+                # the first element can be taken as is, the second and
+                # potential rest is joined with ','
+                i, i + 1 if i == 0 else None
+            ).list.join(VAR_SEP).alias(f"{varname}_{group}")
             for group in ["a", "b"]
             for i, varname in enumerate(vars)
         ],
@@ -110,10 +124,10 @@ cis = cis.with_columns(
     .map_elements(fmt_fold_change, return_dtype=str)
     .alias("fold change"),
     pl.concat_list([f"{var}_a" for var in vars])
-    .list.join(": ")
+    .list.join(FIRST_VAR_SEP)
     .alias("case_a"),
     pl.concat_list([f"{var}_b" for var in vars])
-    .list.join(": ")
+    .list.join(FIRST_VAR_SEP)
     .alias("case_b"),
 )
 
@@ -128,6 +142,7 @@ if snakemake.wildcards.legend == "yes":
     color_spec = color_spec.legend(title=None)
 else:
     color_spec = color_spec.legend(None)
+
 dist_chart = (
     alt.Chart(data)
     .mark_circle(tooltip=True)
@@ -190,6 +205,17 @@ def get_all_effect_chart():
 def get_selected_effect_chart():
     comparisons = pl.read_csv(snakemake.input.comparisons, separator="\t")
 
+    if len(snakemake.params.vars) > 2:
+        # combine vars[1:] into a single variable
+        comparisons = comparisons.with_columns(
+            [
+                pl.concat_list([f"{var}_{group}" for var in snakemake.params.vars[1:]]).list.join(VAR_SEP).alias(
+                    f"{vars[1]}_{group}"
+                )
+                for group in ["a", "b"]
+            ]
+        )
+
     def swap_colname(col):
         return col[:-1] + ("b" if col.endswith("_a") else "a")
 
@@ -202,15 +228,17 @@ def get_selected_effect_chart():
         ],
         how="diagonal",
     )
+    joincols = [
+        f"{var}_{group}"
+        for var in vars
+        for group in ["a", "b"]
+    ]
+
     selected_cis = (
         cis.join(
             comparisons,
             how="semi",
-            on=[
-                f"{var}_{group}"
-                for var in vars
-                for group in ["a", "b"]
-            ],
+            on=joincols,
         )
         .filter(
             pl.col("fold change") != "=",
