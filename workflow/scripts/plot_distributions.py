@@ -59,7 +59,7 @@ cis = (
     .with_columns(
         [
             pl.col(f"group_{group}").list.slice(
-                # the first element can be taken as is, the second and 
+                # the first element can be taken as is, the second and
                 # potential rest is joined with ','
                 i, i + 1 if i == 0 else None
             ).list.join(VAR_SEP).alias(f"{varname}_{group}")
@@ -290,7 +290,7 @@ if mode == "all":
     chart = dist_chart & get_all_effect_chart()
 else:
     effects = get_selected_effect_chart()
-    if effects is not None:
+    if effects is not None and False:
         chart = dist_chart & effects
     else:
         chart = dist_chart
