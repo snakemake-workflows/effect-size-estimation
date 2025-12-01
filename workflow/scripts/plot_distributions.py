@@ -37,6 +37,7 @@ data = data.with_columns(
     pl.col(vars[1]).replace_strict(var_indexes).alias("index"),
     pl.concat_list(vars).list.join(FIRST_VAR_SEP).alias("case"),
 )
+pl.Config.set_tbl_rows(200)
 print(data)
 
 color_order = data.get_column(color_col).unique(maintain_order=True).to_list()
