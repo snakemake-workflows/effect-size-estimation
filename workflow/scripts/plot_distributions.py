@@ -26,11 +26,12 @@ data = pl.read_parquet(snakemake.input.data).with_row_count("idx").with_columns(
 ).sort(["group_first_idx", "idx"]).drop(["idx", "group_first_idx"])
 
 if len(vars) > 2:
+    combined_var = VAR_SEP.join(vars[1:])
     # combine vars[1:] into a single variable
     data = data.with_columns(
-        pl.concat_list(vars[1:]).list.join(VAR_SEP).alias("combined_var"),
+        pl.concat_list(vars[1:]).list.join(VAR_SEP).alias(combined_var),
     )
-    vars = [vars[0], "combined_var"]
+    vars = [vars[0], combined_var]
 
 color_col = "case" if mode == "all" else vars[1]
 
@@ -207,7 +208,7 @@ def get_selected_effect_chart():
         comparisons = comparisons.with_columns(
             [
                 pl.concat_list([f"{var}_{group}" for var in snakemake.params.vars[1:]]).list.join(VAR_SEP).alias(
-                    f"combined_var_{group}"
+                    f"{vars[1]}_{group}"
                 )
                 for group in ["a", "b"]
             ]
