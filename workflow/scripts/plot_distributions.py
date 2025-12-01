@@ -135,6 +135,8 @@ if snakemake.wildcards.legend == "yes":
     color_spec = color_spec.legend(title=None)
 else:
     color_spec = color_spec.legend(None)
+
+print(data.get_column("case").unique(maintain_order=True).to_list())
 dist_chart = (
     alt.Chart(data)
     .mark_circle(tooltip=True)
@@ -290,11 +292,13 @@ def get_selected_effect_chart():
 if mode == "all":
     chart = dist_chart & get_all_effect_chart()
 else:
-    effects = get_selected_effect_chart()
-    if effects is not None:
-        chart = dist_chart # & effects DBG UNDO
-    else:
-        chart = dist_chart
+    # DBG UNDO
+    # effects = get_selected_effect_chart()
+    # if effects is not None:
+    #     chart = dist_chart # & effects DBG UNDO
+    # else:
+    #     chart = dist_chart
+    chart = dist_chart
 
 chart.configure_concat(spacing=0).resolve_scale(
     y="independent", x="shared", color="shared"
