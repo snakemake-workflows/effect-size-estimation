@@ -7,8 +7,8 @@ import polars as pl
 import altair as alt
 
 EPSILON = 0.1
-VAR_SEP = ","
-FIRST_VAR_SEP = ":"
+VAR_SEP = ", "
+FIRST_VAR_SEP = ": "
 
 vars = snakemake.params.vars
 mode = snakemake.wildcards.mode
