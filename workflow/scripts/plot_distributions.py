@@ -7,7 +7,8 @@ import polars as pl
 import altair as alt
 
 EPSILON = 0.1
-VAR_SEP = ","
+VAR_SEP = "_"
+FIRST_VAR_SEP = "_"
 
 vars = snakemake.params.vars
 mode = snakemake.wildcards.mode
@@ -35,7 +36,7 @@ var_values = (
 var_indexes = {value: i for i, value in enumerate(var_values)}
 data = data.with_columns(
     pl.col(vars[1]).replace_strict(var_indexes).alias("index"),
-    pl.concat_list(vars).list.join(": ").alias("case"),
+    pl.concat_list(vars).list.join(FIRST_VAR_SEP).alias("case"),
 )
 print(data)
 
@@ -117,10 +118,10 @@ cis = cis.with_columns(
     .map_elements(fmt_fold_change, return_dtype=str)
     .alias("fold change"),
     pl.concat_list([f"{var}_a" for var in vars])
-    .list.join(": ")
+    .list.join(FIRST_VAR_SEP)
     .alias("case_a"),
     pl.concat_list([f"{var}_b" for var in vars])
-    .list.join(": ")
+    .list.join(FIRST_VAR_SEP)
     .alias("case_b"),
 )
 
@@ -139,7 +140,7 @@ dist_chart = (
     alt.Chart(data)
     .mark_circle(tooltip=True)
     .encode(
-        alt.X("case", type="nominal", sort=None), #.axis(None),
+        alt.X("case", type="nominal", sort=None), #.axis(None), # DBG undo
         alt.Y(snakemake.params.value, type="quantitative")
         .scale(zero=False)
         .axis(grid=False, title=None),
@@ -290,8 +291,8 @@ if mode == "all":
     chart = dist_chart & get_all_effect_chart()
 else:
     effects = get_selected_effect_chart()
-    if effects is not None and False:
-        chart = dist_chart & effects
+    if effects is not None:
+        chart = dist_chart # & effects DBG UNDO
     else:
         chart = dist_chart
 
