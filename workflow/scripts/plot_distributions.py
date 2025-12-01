@@ -140,7 +140,7 @@ dist_chart = (
     alt.Chart(data)
     .mark_circle(tooltip=True)
     .encode(
-        alt.X("case", type="nominal", sort=None), #.axis(None), # DBG undo
+        alt.X("case", type="nominal", sort=None).axis(None),
         alt.Y(snakemake.params.value, type="quantitative")
         .scale(zero=False)
         .axis(grid=False, title=None),
