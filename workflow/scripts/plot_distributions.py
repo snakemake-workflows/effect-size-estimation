@@ -18,7 +18,9 @@ assert (
 ), "min_fold_change must be greater than 1.0"
 min_conservative_log2_fold_change = math.log2(snakemake.params.min_fold_change)
 
-data = pl.read_parquet(snakemake.input.data).sort(vars[0])
+data = pl.read_parquet(snakemake.input.data).with_row_count("idx").with_columns(
+    pl.first("idx").over(vars[0]).alias("group_first_idx")
+).sort(["group_first_idx", "idx"]).drop(["idx", "group_first_idx"])
 
 if len(vars) > 2:
     # combine vars[1:] into a single variable
