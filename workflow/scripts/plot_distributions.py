@@ -18,6 +18,9 @@ assert (
 ), "min_fold_change must be greater than 1.0"
 min_conservative_log2_fold_change = math.log2(snakemake.params.min_fold_change)
 
+# Stably sort the data such that the first variable is grouped together
+# This is necessary because we draw a rule to label x-axis with first variable
+# values.
 data = pl.read_parquet(snakemake.input.data).with_row_count("idx").with_columns(
     pl.first("idx").over(vars[0]).alias("group_first_idx")
 ).sort(["group_first_idx", "idx"]).drop(["idx", "group_first_idx"])
@@ -39,8 +42,6 @@ data = data.with_columns(
     pl.col(vars[1]).replace_strict(var_indexes).alias("index"),
     pl.concat_list(vars).list.join(FIRST_VAR_SEP).alias("case"),
 )
-pl.Config.set_tbl_rows(200)
-print(data)
 
 color_order = data.get_column(color_col).unique(maintain_order=True).to_list()
 
@@ -131,7 +132,7 @@ cis = cis.with_columns(
 # generate data frame with two rows for each group_a, group_b pair, one with
 # the group_a values and the corresponding vars[0] value and the corresponding index,
 # and one with group_b values and the corresponding vars[0] value and the corresponding index
-color_spec = alt.Color(color_col, type="nominal", sort=None).scale(
+color_spec = alt.Color(color_col, type="nominal").scale(
     domain=color_order, range=snakemake.params.color_scheme
 )
 if snakemake.wildcards.legend == "yes":
@@ -139,7 +140,6 @@ if snakemake.wildcards.legend == "yes":
 else:
     color_spec = color_spec.legend(None)
 
-print(data.get_column("case").unique(maintain_order=True).to_list())
 dist_chart = (
     alt.Chart(data)
     .mark_circle(tooltip=True)
@@ -169,19 +169,16 @@ if mode == "selected":
             pl.col("case").last().alias("x2"),
         ]
     )
-    print(data)
-    print(underline_data)
 
-    # DBG UNDO
-    # dist_chart += alt.Chart(underline_data).mark_rule(strokeWidth=0.5).encode(
-    #     alt.X("x", type="nominal", sort=None).axis(None),
-    #     alt.X2("x2"),
-    #     alt.Y(value=-2),
-    # ) + alt.Chart(underline_data).mark_text(dy=-4, align="left", fontSize=8).encode(
-    #     alt.X("x", type="nominal", sort=None).axis(None),
-    #     alt.Text("label"),
-    #     alt.Y(value=-2),
-    # )
+    dist_chart += alt.Chart(underline_data).mark_rule(strokeWidth=0.5).encode(
+        alt.X("x", type="nominal", sort=None).axis(None),
+        alt.X2("x2"),
+        alt.Y(value=-2),
+    ) + alt.Chart(underline_data).mark_text(dy=-4, align="left", fontSize=8).encode(
+        alt.X("x", type="nominal", sort=None).axis(None),
+        alt.Text("label"),
+        alt.Y(value=-2),
+    )
 
 
 def get_all_effect_chart():
@@ -295,13 +292,11 @@ def get_selected_effect_chart():
 if mode == "all":
     chart = dist_chart & get_all_effect_chart()
 else:
-    # DBG UNDO
-    # effects = get_selected_effect_chart()
-    # if effects is not None:
-    #     chart = dist_chart # & effects DBG UNDO
-    # else:
-    #     chart = dist_chart
-    chart = dist_chart
+    effects = get_selected_effect_chart()
+    if effects is not None:
+        chart = dist_chart & effects
+    else:
+        chart = dist_chart
 
 chart.configure_concat(spacing=0).resolve_scale(
     y="independent", x="shared", color="shared"
