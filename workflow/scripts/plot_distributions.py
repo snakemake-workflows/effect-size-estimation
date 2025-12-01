@@ -213,6 +213,7 @@ def get_selected_effect_chart():
                 for group in ["a", "b"]
             ]
         )
+        print(comparisons)
 
     def swap_colname(col):
         return col[:-1] + ("b" if col.endswith("_a") else "a")
