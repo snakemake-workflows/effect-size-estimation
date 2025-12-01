@@ -215,7 +215,6 @@ def get_selected_effect_chart():
                 for group in ["a", "b"]
             ]
         )
-        print(comparisons)
 
     def swap_colname(col):
         return col[:-1] + ("b" if col.endswith("_a") else "a")
@@ -234,8 +233,6 @@ def get_selected_effect_chart():
         for var in vars
         for group in ["a", "b"]
     ]
-    print(comparisons.select(joincols))
-    print(cis.select(joincols))
 
     selected_cis = (
         cis.join(
@@ -251,7 +248,6 @@ def get_selected_effect_chart():
         )
         .with_row_index()
     )
-    print(selected_cis)
 
     case_idx = {
         case: i
